@@ -79,7 +79,7 @@ class RedditInput(QMainWindow):
         self.ui.le_url.textChanged.connect(self.novel_name)
 
         self.con = QSqlDatabase.addDatabase("QSQLITE")
-        self.con.setDatabaseName(r"H:\texte\Novels\004_utilities\database\Reddit.sqlite")
+        self.con.setDatabaseName(r"C:\Users\LeeZH\PycharmProjects\redditScraper\resources/Reddit.sqlite")
         self.con.open()
 
         self.model_subreddit = QSqlTableModel(db=self.con)
@@ -276,13 +276,16 @@ class RedditInput(QMainWindow):
                                                  Qt.EditRole)
 
     async def TTSTitle(self, folder_base, line_text, audioname):
-        filename = (f'{"/".join(folder_base.split("/")[0:2])}/{audioname}.wav')
-        # filename2 = os.path.abspath(filename)
-        # print(filename2, os.path.isfile(filename2))
+        filename = (f'{"/".join(folder_base.split("/")[0:3])}/{audioname}.wav')
+        filename2 = os.path.abspath(filename)
+        print(filename2, os.path.isfile(filename2))
         if not os.path.isfile(filename):
             audio = generate(text=line_text, voice="C94nrIONO8Li9asoWtIp")
             with open(filename, mode='wb') as f:
                 f.write(audio)
+
+            data, samplerate = soundfile.read(filename)
+            soundfile.write(filename, data, samplerate)
 
     @asyncSlot()
     async def text_to_speech(self):
@@ -327,7 +330,7 @@ class RedditInput(QMainWindow):
             QTimer.singleShot(1, loop.quit)
             loop.exec_()
             # filename_base = f"[{line_subreddit}]/{line_entry_author}/{winsanetize(line_submission)} ~ {winsanetize(line_submission_title)}"
-            filename_base = f"[{line_subreddit}]/{winsanetize(line_submission)} - {winsanetize(line_submission_title)}/{line_entry_author}"
+            filename_base = f"data/{line_subreddit}/{winsanetize(line_submission)} - {winsanetize(line_submission_title)}/{line_entry_author}"
             os.makedirs(filename_base, exist_ok=True)
             filenameAudio = f"{padding(line_num, 3)}_{line_voice_name}"
             dirnameAudio = f'{filename_base}/audio'

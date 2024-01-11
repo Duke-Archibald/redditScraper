@@ -14,7 +14,9 @@ html_blacklist = ['[document]', 'noscript', 'header', 'html', 'meta', 'head', 'i
 def winsanetize(filename):
     filename = str(filename).replace(",", "''")
     keepcharacters = (' ', '_', '-')
-    return "".join(c for c in str(filename) if c.isalnum() or c in keepcharacters).rstrip()
+    full = "".join(c for c in str(filename) if c.isalnum() or c in keepcharacters).rstrip()
+    full = full[:100]
+    return full
 
 
 def testmatch(match):
