@@ -69,7 +69,7 @@ class RedditInput(QMainWindow):
         self.ui.pb_duplicate_line.clicked.connect(self.insertRow)
         self.ui.pb_merge_lines.clicked.connect(self.mergeRow)
         self.ui.pb_tts.clicked.connect(self.text_to_speech)
-        self.ui.pb_test.clicked.connect(self.text_to_speech2)
+        # self.ui.pb_test.clicked.connect(self.text_to_speech2)
 
         self.ui.pb_sample.clicked.connect(self.sample)
         self.ui.pb_next.hide()
@@ -358,8 +358,9 @@ class RedditInput(QMainWindow):
                     response = self.client.synthesize_speech(
                         input=text_input, voice=voice_params, audio_config=audio_config
                     )
-                    with open(f"{dirnameAudio}/{filenameAudio}.wav", mode="wb") as out:
-                        out.write(response.audio_content)
+                    if not os.path.isfile(f"{dirnameAudio}/{filenameAudio}.wav"):
+                        with open(f"{dirnameAudio}/{filenameAudio}.wav", mode="wb") as out:
+                            out.write(response.audio_content)
             if line_voice_system == "elevenlabs":
                 start_line = line_num
                 print("elevenlabs")
@@ -375,8 +376,9 @@ class RedditInput(QMainWindow):
                         infomessagebox2.open()
                         quotaecceded = True
                         break
-                    with open(f'{dirnameAudio}/{filenameAudio}.wav', mode='wb') as f:
-                        f.write(audio)
+                    if not os.path.isfile(f"{dirnameAudio}/{filenameAudio}.wav"):
+                        with open(f'{dirnameAudio}/{filenameAudio}.wav', mode='wb') as f:
+                            f.write(audio)
             if line_voice_system == "none":
                 if line_voice == "Title":
                     await self.TTSTitle(filename_base, line_text, filenameAudio)
