@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "novelapp-322716",
+  "private_key_id": "f629fcd1c56818e0cb9b50ef0cb83608ef1e82a8",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC0XXH1lil1Hfl7\nL8MdUgs5t7KayJZqK5wsEQd/xk0v7Lr+rFOa186ohLzugLc8lh/VxCdXxkKftiyG\nzd20TgZ+dRRp6GoRaNFpQLy/GcH+UBlhmKUCie3luV+1t5aJg6p+62lQECv11aez\nJcB0KMOExdh119sojQiMqMyLwbLtt9fzz3jiHBKeMfogJvyiA0giUJNXuAcHrvKZ\nKWE5qOlcb6wSrLrk3elVA7VfCcEk+oPX91Gfy/LX0PBAMM41kNaVKKZh6TI+gKjM\nsb/MCUy7AZx5SnAjg79N2HM6qvklodsbMQ/d1TGj5uEMcKjrSQI3PAkwhxT1LYB1\nZqGctQQhAgMBAAECggEABgK3MX/3kbeWAMzuq6N4TEwa352fpZoecjl/DnsFR3uU\nH7iOcLKQaH1D7o7LjHFUTkNjLEGnJrtjcHqb0M5o2P392CmunzXnBKLrp1KsbFUv\nA1ma5iLCks1Cq0Oa+KoynFgsAkcHsAGWvRmc+EIDggE13Xd8DjXk+wsFBgNGezV+\nvJw4Ka4csUMcy2LVGVASOZWppPE/7awq3RomEfyfNLQh3jUHPdwLjAzkivjYUU/4\nsBntiXORH+xO6cH0jzg8xVRt+ZX67X3BgDRwqwpTu+TIW5OU6HjAAocOYX/apkRn\nNtn+etKRkgxgKec4D5myRnoo6qpB68yKNCcklT49gQKBgQD4DY3PTNnm7KEkciEo\n0n2DmoxzWX/PgCerjlbffRYTT+S1CbKZIzAMRtA0sXGNPpk/m9ste9xRlX7HdBAR\n/kwNg9m3aaOZGvSrSICO5ktTKhjSkbRad9VfaLggvj++FlHIXtMoOuEGDowPaKUK\nYwInro+XrHtbL9hV4YrOmhAf5QKBgQC6JLziF84VQu/F6hTGMlDXF0B25X/Z4gIO\noTWIwPJYPOnX0Ne8JLFzFLa3FQ0IgvJhS76lJp6u6nmuLnzUdYjFmhN4HGEzdQyT\nysNf2ENGqxrtfwleVp9QgdYimMH0Azu9BV43t3X/6B2bdAsnlELiA+8X3bIalbBc\nMi1SBwB3jQKBgC/k/hKethweaGbPGpP1QILenmvPRhxclExNqXxxfIeyD2jdPHzR\nDH/yVFU4RcKN6a0cfM9lcP7XrKj6QfgXb7vUT39YiFwRllhUIW52DOk74ZsWwwoM\nxUgswhCga1JaoOPdW0wTQkuXF3gKLoO45jufOt6AUTkkHdNHPzPxD1f5AoGAAo8g\nvacAIVCzRTBLqtHkRKDANSJAmLk/t/3FY6TrcAUeXeY0IRUMD334aRnz/Or39Bh7\nfX/DbLoyhA+FjdIz2CufGuag+3kffCSsfPPXMPCHRT6a3V4pgIzYac9Z00X8G0Qo\noHF4QNVrGskEoj2qkbrmHZjhqvXl386cyuTnv70CgYBkYCa08NGRJTgHONqugmsO\nbxbkAFu4s93KbAi+k50yZqovVmYalxol4jWFr8ssuo5NZv+9FUAB9vIhVuXSyM/b\nEF2hJGxp0xVVD+A4FPFJNZrdPQXZVg4IoC8nRmYFzUNh5BGH5BLD2PbqzcRwUyuP\nRTQqWqhbMD3VYKUhZ+X8og==\n-----END PRIVATE KEY-----\n",
+  "client_email": "my-novel-app-sa@novelapp-322716.iam.gserviceaccount.com",
+  "client_id": "101214696655997786590",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/my-novel-app-sa%40novelapp-322716.iam.gserviceaccount.com"
+}
