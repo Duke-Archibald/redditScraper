@@ -1,6 +1,0 @@
-password_user = "y44XNb7icjde"
-user_name1 = "charact1_Discord_user"
-password_admin="Q9QjFv5NeGqXFyN"
-admin_name="charact1_duke"
-secretKey = "b7c91c0960fa467eb8f81e311802fa67"
-userID = "71qCme9epeU5GGQjWlT3ne4epYf2"
