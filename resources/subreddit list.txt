@@ -1,0 +1,26 @@
+185vjhr
+186emso
+186g6vy
+186ilib
+186rdpr
+187f9ua
+187hn7e
+5uilpw
+6xisxt
+79ybz1
+7i3bs6
+7jjukm
+7r6qu3
+99ph2b
+99qwrz
+9obfbu
+1899oyb
+
+insert into 'subreddits'('subreddit_name') VALUES('WritingPrompts');
+insert into 'status'('status_name') VALUES('to-do');
+insert into 'status'('status_name') VALUES('wip');
+insert into 'status'('status_name') VALUES('complete');
+insert into 'voices'('voice_code','voice_name','voice_system') VALUES('to-do','to-do','none');
+insert into 'submissions'('submission_name','submission_code','submission_status','submission_url') VALUES('test1','test1','to-do','google.com');
+insert into 'entries'('entry_author_name','entry_code','entry_status','entry_submission') VALUES('test1','test1','to-do','test1');
+insert into 'lines'('line_text','line_voice','line_subreddit','line_submission','line_entry') VALUES('sfasdfasdf','to-do','WritingPrompts','test1','test1')
