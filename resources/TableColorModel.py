@@ -26,21 +26,26 @@ class TableColorModel(QSqlRelationalTableModel):
             elif self.tableName() == "submissions":
                 status = super(TableColorModel, self).data(super(TableColorModel, self)
                                                            .index(index.row(), 3), Qt.DisplayRole)
-                if status == "wip":
-                    color = QColor("#979c08")
-                elif status == "to-do":
-                    color = QColor("#919189")
+                if status == "to-do":
+                    color = QColor("#8c2706")
+                elif status == "wip":
+                    color = QColor("#ad7b0e")
+                elif status == "TTS_Done":
+                    color = QColor("#7ead0e")
                 elif status == "complete":
-                    color = QColor("#00800d")
+                    color = QColor("#0b7a0d")
+
 
             elif self.tableName() == "entries":
                 status = super(TableColorModel, self).data(super(TableColorModel, self)
                                                            .index(index.row(), 3), Qt.DisplayRole)
-                if status == "wip":
-                    color = QColor("#979c08")
-                elif status == "to-do":
-                    color = QColor("#919189")
+                if status == "to-do":
+                    color = QColor("#8c2706")
+                elif status == "wip":
+                    color = QColor("#ad7b0e")
+                elif status == "TTS_Done":
+                    color = QColor("#7ead0e")
                 elif status == "complete":
-                    color = QColor("#00800d")
+                    color = QColor("#0b7a0d")
 
             return color

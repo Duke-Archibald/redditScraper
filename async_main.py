@@ -79,7 +79,7 @@ class RedditInput(QMainWindow):
         self.ui.le_url.textChanged.connect(self.novel_name)
 
         self.con = QSqlDatabase.addDatabase("QSQLITE")
-        self.con.setDatabaseName(r"C:\Users\LeeZH\PycharmProjects\redditScraper\resources/Reddit.sqlite")
+        self.con.setDatabaseName(r"H:\texte\Novels\004_utilities\database\Reddit.sqlite")
         self.con.open()
 
         self.model_subreddit = QSqlTableModel(db=self.con)
@@ -106,7 +106,7 @@ class RedditInput(QMainWindow):
         self.ui.cb_voice.setModel(self.model_voice)
         self.ui.cb_voice.setModelColumn(2)
         self.model_chapter_entry.setFilter(f"entry_submission = "
-                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip')")
+                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip' or entry_status = 'TTS_Done')")
 
         self.model_lines = TableColorModel(db=self.con)
         self.loadline(
@@ -360,6 +360,9 @@ class RedditInput(QMainWindow):
                     )
                     with open(f"{dirnameAudio}/{filenameAudio}.wav", mode="wb") as out:
                         out.write(response.audio_content)
+                    data, samplerate = soundfile.read(f"{dirnameAudio}/{filenameAudio}.wav")
+                    soundfile.write(f"{dirnameAudio}/{filenameAudio}.wav", data, samplerate)
+
             if line_voice_system == "elevenlabs":
                 start_line = line_num
                 print("elevenlabs")
@@ -377,6 +380,8 @@ class RedditInput(QMainWindow):
                         break
                     with open(f'{dirnameAudio}/{filenameAudio}.wav', mode='wb') as f:
                         f.write(audio)
+                    data, samplerate = soundfile.read(f'{dirnameAudio}/{filenameAudio}.wav')
+                    soundfile.write(f'{dirnameAudio}/{filenameAudio}.wav', data, samplerate)
             if line_voice_system == "none":
                 if line_voice == "Title":
                     await self.TTSTitle(filename_base, line_text, filenameAudio)
@@ -396,7 +401,7 @@ class RedditInput(QMainWindow):
             sub_ok = await self.subtitle_gen(dirnameSub, dirnameAudio, Titles)
             if sub_ok:
                 self.model_chapter_entry.setData(self.model_chapter_entry.index(self.ui.cb_entry_name.currentIndex(), 3),
-                                                 f"complete", Qt.EditRole)
+                                                 f"TTS_Done", Qt.EditRole)
             if self.model_chapter_entry.submitAll():
 
                 self.model_chapter_entry.select()
