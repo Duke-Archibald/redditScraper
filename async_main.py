@@ -79,9 +79,9 @@ class RedditInput(QMainWindow):
         self.ui.le_url.textChanged.connect(self.novel_name)
 
         self.con = QSqlDatabase.addDatabase("QSQLITE")
-        self.con.setDatabaseName(r"C:\Users\LeeZH\PycharmProjects\redditScraper\resources/Reddit.sqlite")
+        databasefile = "resources/Reddit.sqlite"
+        self.con.setDatabaseName(databasefile)
         self.con.open()
-
         self.model_subreddit = QSqlTableModel(db=self.con)
         self.model_subreddit.setTable("subreddits")
         self.model_subreddit.select()
