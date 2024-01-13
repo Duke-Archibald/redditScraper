@@ -69,7 +69,7 @@ class RedditInput(QMainWindow):
         self.ui.pb_duplicate_line.clicked.connect(self.insertRow)
         self.ui.pb_merge_lines.clicked.connect(self.mergeRow)
         self.ui.pb_tts.clicked.connect(self.text_to_speech)
-        self.ui.pb_test.clicked.connect(self.text_to_speech2)
+        # self.ui.pb_test.clicked.connect(self.text_to_speech2)
 
         self.ui.pb_sample.clicked.connect(self.sample)
         self.ui.pb_next.hide()
@@ -79,7 +79,7 @@ class RedditInput(QMainWindow):
         self.ui.le_url.textChanged.connect(self.novel_name)
 
         self.con = QSqlDatabase.addDatabase("QSQLITE")
-        self.con.setDatabaseName(r"H:\texte\Novels\004_utilities\database\Reddit.sqlite")
+        self.con.setDatabaseName(r"C:\Users\LeeZH\PycharmProjects\redditScraper\resources/Reddit.sqlite")
         self.con.open()
 
         self.model_subreddit = QSqlTableModel(db=self.con)
@@ -106,7 +106,7 @@ class RedditInput(QMainWindow):
         self.ui.cb_voice.setModel(self.model_voice)
         self.ui.cb_voice.setModelColumn(2)
         self.model_chapter_entry.setFilter(f"entry_submission = "
-                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip' or entry_status = 'TTS_Done')")
+                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip')")
 
         self.model_lines = TableColorModel(db=self.con)
         self.loadline(
