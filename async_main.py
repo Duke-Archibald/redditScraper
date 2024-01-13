@@ -106,7 +106,7 @@ class RedditInput(QMainWindow):
         self.ui.cb_voice.setModel(self.model_voice)
         self.ui.cb_voice.setModelColumn(2)
         self.model_chapter_entry.setFilter(f"entry_submission = "
-                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip')")
+                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip' or entry_status = 'TTS_Done')")
 
         self.model_lines = TableColorModel(db=self.con)
         self.loadline(
@@ -278,7 +278,7 @@ class RedditInput(QMainWindow):
     async def TTSTitle(self, folder_base, line_text, audioname):
         filename = (f'{"/".join(folder_base.split("/")[0:3])}/{audioname}.wav')
         filename2 = os.path.abspath(filename)
-        print(filename2, os.path.isfile(filename2))
+        # print(filename2, os.path.isfile(filename2))
         if not os.path.isfile(filename):
             audio = generate(text=line_text, voice="C94nrIONO8Li9asoWtIp")
             with open(filename, mode='wb') as f:
@@ -289,6 +289,12 @@ class RedditInput(QMainWindow):
 
     @asyncSlot()
     async def text_to_speech(self):
+
+        def add_subtext(file, line):
+            with open(file, "a", encoding="utf-8") as sub:
+                print(line)
+                sub.write(f"{line}\n")
+
         infomessagebox = QMessageBox(self)
         infomessagebox.setWindowTitle(f"{appname} - TTS")
         infomessagebox.setText("making TTS please wait")
@@ -336,10 +342,23 @@ class RedditInput(QMainWindow):
             dirnameAudio = f'{filename_base}/audio'
             os.makedirs(dirnameAudio, exist_ok=True)
             subtitle_text.append(line_text)
+            dirnameSub = f"{filename_base}/subtitles"
+            os.makedirs(dirnameSub, exist_ok=True)
+            filename_text_subtitle = f"{dirnameSub}/subtitle.txt"
+            filename_title_text_subtitle = f"{'/'.join(dirnameSub.split('/')[:-2])}/Title_subtitle.txt"
+            print(line_num)
+            if line_num == 0:
+                with open(filename_text_subtitle, "w", encoding="utf-8") as sub:
+                    sub.write(f"")
+                with open(filename_title_text_subtitle, "w", encoding="utf-8") as sub:
+                    sub.write(f"")
+
             if line_voice == "to-do":
+                add_subtext(filename_text_subtitle, line_text)
                 continue
             if line_voice_system == "google":
                 print("google")
+                add_subtext(filename_text_subtitle, line_text)
                 if not os.path.isfile(f'{dirnameAudio}/{filenameAudio}.wav'):
                     language_code = "-".join(line_voice.split("-")[:2])
                     if line_text.strip() == "…" or line_text.strip() == "'…'":
@@ -360,12 +379,13 @@ class RedditInput(QMainWindow):
                     )
                     with open(f"{dirnameAudio}/{filenameAudio}.wav", mode="wb") as out:
                         out.write(response.audio_content)
+
                     data, samplerate = soundfile.read(f"{dirnameAudio}/{filenameAudio}.wav")
                     soundfile.write(f"{dirnameAudio}/{filenameAudio}.wav", data, samplerate)
 
             if line_voice_system == "elevenlabs":
-                start_line = line_num
                 print("elevenlabs")
+                add_subtext(filename_text_subtitle, line_text)
                 if not os.path.isfile(f'{dirnameAudio}/{filenameAudio}.wav'):
                     try:
                         audio = generate(text=line_text, voice=line_voice)
@@ -373,87 +393,45 @@ class RedditInput(QMainWindow):
                         infomessagebox.done(0)
                         infomessagebox2 = QMessageBox(self)
                         infomessagebox2.setWindowTitle(f"{appname} - autoSave")
-                        infomessagebox2.setText(e.message,line_text)
+                        infomessagebox2.setText(e.message, line_text)
                         infomessagebox2.setStandardButtons(QMessageBox.Close)
                         infomessagebox2.open()
                         quotaecceded = True
                         break
                     with open(f'{dirnameAudio}/{filenameAudio}.wav', mode='wb') as f:
                         f.write(audio)
+
                     data, samplerate = soundfile.read(f'{dirnameAudio}/{filenameAudio}.wav')
                     soundfile.write(f'{dirnameAudio}/{filenameAudio}.wav', data, samplerate)
             if line_voice_system == "none":
                 if line_voice == "Title":
                     await self.TTSTitle(filename_base, line_text, filenameAudio)
+                    add_subtext(filename_title_text_subtitle, line_text)
                     Titles += 1
                 # data, samplerate = soundfile.read("resources/placeholder.wav")
                 # soundfile.write(f'{dirnameAudio}/{filenameAudio}.wav', data, samplerate)
-        if not quotaecceded:
-            dirnameSub = f"{filename_base}/subtitles"
-            os.makedirs(dirnameSub, exist_ok=True)
-            filename_text_subtitle = f"{dirnameSub}/subtitle.txt"
-            with open(filename_text_subtitle, "w", encoding="utf-8") as sub:
-                for line in subtitle_text:
-                    sub.write(f"{line}\n")
-            infomessagebox.done(0)
 
+        sub_ok = await self.subtitle_gen(dirnameSub, dirnameAudio)
+        title_sub_ok = await self.title_subtitle_gen("/".join(dirnameSub.split("/")[:-2]), '/'.join(dirnameAudio.split("/")[:-2]))
+        if sub_ok and title_sub_ok:
+            self.model_chapter_entry.setData(
+                self.model_chapter_entry.index(self.ui.cb_entry_name.currentIndex(), 3),
+                f"TTS_Done", Qt.EditRole)
+        if self.model_chapter_entry.submitAll():
 
-            sub_ok = await self.subtitle_gen(dirnameSub, dirnameAudio, Titles)
-            if sub_ok:
-                self.model_chapter_entry.setData(self.model_chapter_entry.index(self.ui.cb_entry_name.currentIndex(), 3),
-                                                 f"TTS_Done", Qt.EditRole)
-            if self.model_chapter_entry.submitAll():
-
-                self.model_chapter_entry.select()
-            else:
-                print(self.con.lastError().text())
-    @asyncSlot()
-    async def text_to_speech2(self):
-        infomessagebox = QMessageBox(self)
-        infomessagebox.setWindowTitle(f"{appname} - TTS")
-        infomessagebox.setText("making TTS please wait")
-        infomessagebox.setStandardButtons(QMessageBox.NoButton)
-        infomessagebox.open()
-        qApp.processEvents()
-
-        query = QSqlQuery(db=self.con)
-        entry_code = self.model_chapter_entry.data(
-            self.model_chapter_entry.index(self.ui.cb_entry_name.currentIndex(), 2))
-        Qpre1 = f"SELECT * FROM lines WHERE line_entry = '{entry_code}' ORDER BY line_num ASC"
-        # print(Qpre1)
-        query.exec_(Qpre1)
-        quotaecceded = False
-        while query.next():
-
-            line_id = query.value(0)
-            line_num = query.value(1)
-            line_voice_name = query.value(2)
-            line_voice = query.value(3)
-            line_voice_system = query.value(4)
-            line_text = query.value(5)
-            line_subreddit = query.value(6)
-            line_submission = query.value(7)
-            line_submission_title = query.value(8)
-            line_entry = query.value(9)
-            line_entry_author = query.value(10)
-
-            infomessagebox.setText(f"making TTS please wait -- line {line_num}")
-            loop = QEL()
-            QTimer.singleShot(1, loop.quit)
-            loop.exec_()
-        if not quotaecceded:
-
-
-            infomessagebox.done(0)
+            self.model_chapter_entry.select()
+        else:
+            print(self.con.lastError().text())
+        infomessagebox.done(0)
 
     def handle_complete(self):
         self.model_submission.setData(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 3),
-                                         f"complete", Qt.EditRole)
+                                      f"complete", Qt.EditRole)
         self.model_submission.submitAll()
 
-    async def subtitle_gen(self, dirname_sub, dirname_audio, Titles):
+    async def subtitle_gen(self, dirname_sub, dirname_audio):
         def nat_key(value):
-            return tuple(int(s) if s.isdigit() else s for s in re.split("(\d+)", value))
+            return tuple(int(s) if s.isdigit() else s for s in re.split(r"(\d+)", value))
 
         time0 = "00:00:00,000"
         date_format_str = '%H:%M:%S,%f'
@@ -462,8 +440,10 @@ class RedditInput(QMainWindow):
         with (open(f"{dirname_sub}/subtitle.txt", "r") as subText):
             linelist = subText.readlines()
             _, _, audios = next(os.walk(dirname_audio))
+            audios = [audio for audio in audios if ".wav" in audio]
             audiofilelist = os.scandir(dirname_audio)
-            if len(linelist) - Titles != len(audios):
+            if len(linelist) != len(audios):
+                print("number of lines")
                 QMessageBox.information(
                     self,
                     f"{appname} - error",
@@ -471,8 +451,7 @@ class RedditInput(QMainWindow):
                 )
                 return False
             for z, entry in enumerate(sorted(audiofilelist, key=lambda e: nat_key(e.name))):
-                if z - Titles < 0:
-                    continue
+                print()
                 path = (os.path.join(dirname_audio, entry.name))
                 data, samplerate = soundfile.read(path)
                 soundfile.write(path, data, samplerate)
@@ -481,6 +460,7 @@ class RedditInput(QMainWindow):
                 n = data.size
                 t = n / Fs
                 y = (int((t * 1000) * 24) / 24)
+                print(z, y, linelist[z])
                 addnext = timedelta(milliseconds=y)
 
                 end = start + addnext
@@ -504,8 +484,69 @@ class RedditInput(QMainWindow):
                 start = end
 
             with open(f"{dirname_sub}/subtitle.srt", "w", encoding="utf16") as f:
-                subtitle_gen = srt.parse("\n".join(sublist))
-                subtitles = list(subtitle_gen)
+                subtitle_gen_v = srt.parse("\n".join(sublist))
+                subtitles = list(subtitle_gen_v)
+                f.write(srt.compose(subtitles))
+            return True
+
+    async def title_subtitle_gen(self, dirname_sub, dirname_audio):
+        def nat_key(value):
+            return tuple(int(s) if s.isdigit() else s for s in re.split(r"(\d+)", value))
+
+        time0 = "00:00:00,000"
+        date_format_str = '%H:%M:%S,%f'
+        start = datetime.strptime(time0, date_format_str)
+        sublist = []
+        with (open(f"{dirname_sub}/title_subtitle.txt", "r") as subText):
+            linelist = subText.readlines()
+            _, _, audios = next(os.walk(dirname_audio))
+            audios = [audio for audio in audios if ".wav" in audio]
+            _,_,audiofilelist = next(os.walk(dirname_audio))
+            audiofilelist = [audio for audio in audiofilelist if ".wav" in audio]
+            if len(linelist) != len(audios):
+                print("number of lines")
+                QMessageBox.information(
+                    self,
+                    f"{appname} - error",
+                    f"the number of line does not match the number of audiofiles\ntext: {len(linelist)}\naudiofiles: {len(audios)}",
+                )
+                return False
+            for z, entry in enumerate(sorted(audiofilelist, key=lambda e: nat_key(e))):
+                print()
+                path = (os.path.join(dirname_audio, entry))
+                data, samplerate = soundfile.read(path)
+                soundfile.write(path, data, samplerate)
+
+                Fs, data = wavfile.read(path)
+                n = data.size
+                t = n / Fs
+                y = (int((t * 1000) * 24) / 24)
+                print(z, y, linelist[z])
+                addnext = timedelta(milliseconds=y)
+
+                end = start + addnext
+
+                fullsub = ""
+                startT = str(start.time()).replace('.', ',')
+                endT = str(end.time()).replace('.', ',')
+                if len(endT) == 15:
+                    endT = endT[:-3]
+                else:
+                    endT = endT + ",000"
+                if len(startT) == 15:
+                    startT = startT[:-3]
+                else:
+                    startT = startT + ",000"
+                fullsub += (str(z + 1) + "\n")
+                fullsub += (f"{startT} --> "
+                            f"{endT}\n")
+                fullsub += (str(linelist[z]).replace(",.", ".").replace(".", "") + "\n")
+                sublist.append(fullsub)
+                start = end
+
+            with open(f"{dirname_sub}/title_subtitle.srt", "w", encoding="utf16") as f:
+                subtitle_gen_v = srt.parse("\n".join(sublist))
+                subtitles = list(subtitle_gen_v)
                 f.write(srt.compose(subtitles))
             return True
 
