@@ -28,15 +28,26 @@
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
-       <widget class="QLineEdit" name="le_url"/>
+       <widget class="QLineEdit" name="le_url">
+        <property name="placeholderText">
+         <string>complete url or sumbmission code (6-7 characters)</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="le_novel_name"/>
+       <widget class="QLineEdit" name="le_novel_name">
+        <property name="placeholderText">
+         <string>submission name</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QLineEdit" name="le_sub">
         <property name="readOnly">
          <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>submission subReddit</string>
         </property>
        </widget>
       </item>
@@ -45,7 +56,7 @@
         <item>
          <widget class="QPushButton" name="pb_next">
           <property name="text">
-           <string>next subreddit</string>
+           <string>download submissions</string>
           </property>
          </widget>
         </item>

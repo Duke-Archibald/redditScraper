@@ -25,9 +25,9 @@ import qdarkstyle
 import spacy
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QPersistentModelIndex, QTimer
+from PyQt5.QtCore import QPersistentModelIndex, QTimer, QSettings
 from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QCloseEvent
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PyQt5.QtWidgets import QMessageBox, QMainWindow, QTableView, qApp
 from elevenlabs import generate, set_api_key, RateLimitError
@@ -56,7 +56,11 @@ class RedditInput(QMainWindow):
         self.ui.setupUi(self)
         self.setWindowTitle(appname)
         self.setWindowIcon(QtGui.QIcon('resources/bookicon.png'))
-        threading.Thread(target=lambda: self.every(5, self.handle_clear_sel)).start()
+        self.settings = QSettings("NovelApp", "reddit_v1")
+        self.readSettings()
+        self.validThread = True
+        self.periodic_thread = threading.Thread(target=self.every, args=(5, self.handle_clear_sel))
+        self.periodic_thread.start()
 
         self.credentials = service_account.Credentials.from_service_account_file("resources/"
                                                                                  "novelapp-322716-f629fcd1c568.json")
@@ -69,7 +73,7 @@ class RedditInput(QMainWindow):
         self.ui.pb_duplicate_line.clicked.connect(self.insertRow)
         self.ui.pb_merge_lines.clicked.connect(self.mergeRow)
         self.ui.pb_tts.clicked.connect(self.text_to_speech)
-        # self.ui.pb_test.clicked.connect(self.text_to_speech2)
+        # self.ui.pb_test.clicked.connect()
 
         self.ui.pb_sample.clicked.connect(self.sample)
         self.ui.pb_next.hide()
@@ -99,14 +103,14 @@ class RedditInput(QMainWindow):
         self.model_chapter_entry.select()
         self.ui.cb_entry_name.setModel(self.model_chapter_entry)
         self.ui.cb_entry_name.setModelColumn(1)
+        self.model_chapter_entry.setFilter(f"entry_submission = "
+                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip' or entry_status = 'TTS_Done')")
 
         self.model_voice = TableColorModel(db=self.con)
         self.model_voice.setTable("voices")
         self.model_voice.select()
         self.ui.cb_voice.setModel(self.model_voice)
         self.ui.cb_voice.setModelColumn(2)
-        self.model_chapter_entry.setFilter(f"entry_submission = "
-                                           f"'{self.model_submission.data(self.model_submission.index(self.ui.cb_post_title.currentIndex(), 2))}' and (entry_status = 'to-do' or entry_status = 'wip' or entry_status = 'TTS_Done')")
 
         self.model_lines = TableColorModel(db=self.con)
         self.loadline(
@@ -119,11 +123,21 @@ class RedditInput(QMainWindow):
                                        password="cKFnF8TfJ4KwLNa",
                                        user_agent="Duke_Scrapper_for_stories")
 
-        self.ui.cb_voice.currentTextChanged.connect(self.ui.tv_lines.clearSelection)
-        self.ui.cb_subreddit.currentTextChanged.connect(self.comboboxChanged)
-        self.ui.cb_post_title.currentTextChanged.connect(self.comboboxChanged)
-        self.ui.cb_entry_name.currentTextChanged.connect(self.comboboxChanged)
-        self.ui.cb_gender.currentTextChanged.connect(self.comboboxChanged)
+        self.ui.cb_voice.activated.connect(self.ui.tv_lines.clearSelection)
+        self.ui.cb_subreddit.activated.connect(self.comboboxChanged)
+        self.ui.cb_post_title.activated.connect(self.comboboxChanged)
+        self.ui.cb_entry_name.activated.connect(self.comboboxChanged)
+        self.ui.cb_gender.activated.connect(self.comboboxChanged)
+        self.model_voice.setFilter(f"voice_gender = '{self.ui.cb_gender.currentText()}'")
+        self.model_voice.select()
+
+    def readSettings(self):
+        try:
+            self.restoreGeometry(self.settings.value("geometry"))
+            self.restoreState(self.settings.value("windowState"))
+
+        except Exception as e:
+            print("new pc no setting",e)
 
     def handle_clear_sel(self):
         self.ui.tv_lines.clearSelection()
@@ -135,9 +149,13 @@ class RedditInput(QMainWindow):
         self.model_chapter_entry.submitAll()
         self.model_submission.submitAll()
 
+    def startThread(self):
+
+        pass
+
     def every(self, delay, task):
         next_time = time.time() + delay
-        while True:
+        while self.validThread:
             time.sleep(max(0, next_time - time.time()))
             try:
                 task()
@@ -178,13 +196,15 @@ class RedditInput(QMainWindow):
             print("sample not found")
 
     def reloadcbb(self):
-        self.model_lines.select()
+        print("reload")
+        # self.model_lines.select()
         self.model_submission.select()
         self.model_subreddit.select()
         self.model_chapter_entry.select()
         self.model_voice.select()
 
     def comboboxChanged(self):
+        print(self.sender().objectName())
         if self.sender() == self.ui.cb_subreddit:
             self.model_submission.setFilter(f"submission_subreddit = '{self.ui.cb_subreddit.currentText()}'")
 
@@ -196,6 +216,7 @@ class RedditInput(QMainWindow):
             self.loadline(
                 self.model_chapter_entry.data(self.model_chapter_entry.index(self.ui.cb_entry_name.currentIndex(), 2)))
         elif self.sender() == self.ui.cb_gender:
+            print("gender")
             self.model_voice.setFilter(f"voice_gender = '{self.ui.cb_gender.currentText()}'")
             self.model_voice.select()
 
@@ -412,7 +433,8 @@ class RedditInput(QMainWindow):
                 # soundfile.write(f'{dirnameAudio}/{filenameAudio}.wav', data, samplerate)
 
         sub_ok = await self.subtitle_gen(dirnameSub, dirnameAudio)
-        title_sub_ok = await self.title_subtitle_gen("/".join(dirnameSub.split("/")[:-2]), '/'.join(dirnameAudio.split("/")[:-2]))
+        title_sub_ok = await self.title_subtitle_gen("/".join(dirnameSub.split("/")[:-2]),
+                                                     '/'.join(dirnameAudio.split("/")[:-2]))
         if sub_ok and title_sub_ok:
             self.model_chapter_entry.setData(
                 self.model_chapter_entry.index(self.ui.cb_entry_name.currentIndex(), 3),
@@ -501,7 +523,7 @@ class RedditInput(QMainWindow):
             linelist = subText.readlines()
             _, _, audios = next(os.walk(dirname_audio))
             audios = [audio for audio in audios if ".wav" in audio]
-            _,_,audiofilelist = next(os.walk(dirname_audio))
+            _, _, audiofilelist = next(os.walk(dirname_audio))
             audiofilelist = [audio for audio in audiofilelist if ".wav" in audio]
             if len(linelist) != len(audios):
                 print("number of lines")
@@ -617,17 +639,20 @@ class RedditInput(QMainWindow):
 
         for x, sent in enumerate(doc.sents):
             sent = sent.text.replace("'", "''").replace('. ', '.').strip()
-            print(x, sent)
+            # print(x, sent)
             subreddit = self.submission.url.split("/")[4]
             if sent.strip() == "":
                 continue
-            title = self.submission.title.replace("'", "''")
+            title = winsanetize(self.submission.title.replace("'", "''"))
             prequery = (
-                f"INSERT INTO 'lines' ('line_num','line_voice_name', 'line_text', 'line_voice', 'line_subreddit', 'line_submission', 'line_entry', 'line_voice_system', 'line_entry_author', 'line_submission_title','line_color') "
+                f"INSERT INTO 'lines' ('line_num','line_voice_name', 'line_text', 'line_voice', 'line_subreddit', "
+                f"'line_submission', 'line_entry', 'line_voice_system', 'line_entry_author', 'line_submission_title',"
+                f"'line_color')"
                 f"VALUES ({x},'to-do','{sent}','to-do','{subreddit}','{self.submission}','{top}','none','{top.author.name}','{title}','#ffffff');")
             # prequery = (
             #     f"insert into 'lines'('line_num','line_text','line_voice','line_subreddit','line_submission','line_entry','line_voice_system') "
             #     f"VALUES('{x}','{sent}','to-do','{subreddit}','{self.submission}','{top}','none')")
+            print("line sql")
             print(prequery)
             query = QSqlQuery()
             query.exec(prequery)
@@ -639,7 +664,8 @@ class RedditInput(QMainWindow):
             f"'submission_subreddit')"
             f"VALUES('{winsanetize(self.submission.title)}','{self.submission}','to-do','{self.submission.url}',"
             f"'{winsanetize(self.submission.url.split('/')[4])}');")
-        # print(prequery)
+        print("submission sql")
+        print(prequery)
         query = QSqlQuery()
         query.exec(prequery)
 
@@ -656,16 +682,17 @@ class RedditInput(QMainWindow):
                         # print(prequery)
                         query = QSqlQuery()
                         query.exec(prequery)
-                        title = (winsanetize(self.submission.title).replace('_', ' ').replace('sp ', '{Simple Prompt} ')
-                                 .replace('wp ', '{Writing Prompt} '))
-                        foldername = f"data/WritingPrompts/{winsanetize(self.submission)} - {title}/{winsanetize(top.author.name)}"
+                        title = (winsanetize(self.submission.title).replace('_', ' ').replace('sp ', '')
+                                 .replace('wp ', ''))
+                        foldername = f"data/WritingPrompts/{winsanetize(self.submission)} - {title}/{winsanetize(top.author.name)}".replace(
+                            " ", "_")
                         fullname = f"{foldername}/entry_text.txt"
                         os.makedirs(foldername, exist_ok=True)
                         with open(f"{fullname}", "w", encoding="utf8") as f:
                             print(top.author.name)
-
+                            f.write(f"writing Prompt by {self.submission.author}\n")
                             f.write(
-                                f"{self.submission.title.replace('_', ' ').replace('[SP] ', '[Simple Prompt]').replace('[WP]', '[Writing Prompt]')}\n")
+                                f"{self.submission.title.replace('_', ' ').replace('[SP] ', '').replace('[WP]', '')}\n")
                             f.write(f"Story from user {top.author.name}.\n")
                             f.write(top.body)
                             for comment in top.replies.list():
@@ -804,6 +831,12 @@ class RedditInput(QMainWindow):
         else:
             self.ui.le_sub.setText("url empty")
             self.ui.le_novel_name.setText("")
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        self.settings.setValue('geometry', self.saveGeometry())
+        self.settings.setValue('windowState', self.saveState())
+        self.validThread = False
+        self.con.close()
 
 
 if __name__ == "__main__":

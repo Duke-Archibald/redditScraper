@@ -15,7 +15,7 @@ def winsanetize(filename):
     filename = str(filename).replace(",", "''")
     keepcharacters = (' ', '_', '-')
     full = "".join(c for c in str(filename) if c.isalnum() or c in keepcharacters).rstrip()
-    full = full[:100]
+    full = full[:150]
     return full
 
 

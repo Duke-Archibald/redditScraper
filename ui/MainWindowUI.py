@@ -128,7 +128,10 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.pb_test.setText(_translate("MainWindow", "test"))
-        self.pb_next.setText(_translate("MainWindow", "next subreddit"))
+        self.le_url.setPlaceholderText(_translate("MainWindow", "complete url or sumbmission code (6-7 characters)"))
+        self.le_novel_name.setPlaceholderText(_translate("MainWindow", "submission name"))
+        self.le_sub.setPlaceholderText(_translate("MainWindow", "submission subReddit"))
+        self.pb_next.setText(_translate("MainWindow", "download submissions"))
         self.pb_finish.setText(_translate("MainWindow", "finish"))
         self.pb_cancel.setText(_translate("MainWindow", "cancel"))
         self.pb_complete.setText(_translate("MainWindow", "complete"))
