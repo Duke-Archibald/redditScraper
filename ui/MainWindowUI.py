@@ -20,7 +20,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_4 = QtWidgets.QVBoxLayout(self.centralwidget)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.pb_test = QtWidgets.QPushButton(self.centralwidget)
-        self.pb_test.setEnabled(False)
+        self.pb_test.setEnabled(True)
         self.pb_test.setObjectName("pb_test")
         self.verticalLayout_4.addWidget(self.pb_test)
         self.verticalLayout = QtWidgets.QVBoxLayout()
